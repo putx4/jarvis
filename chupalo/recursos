@@ -1,0 +1,87 @@
+USER=solano
+BOTNAME=JARVIS
+
+NEWS_API_KEY = config("6deb9991bea24c4e8ea9686957cbbc4c")
+
+#correo
+EMAIL=luismiguelsolanogomez2@gmail.com
+PASSWORD=Lacuca3000
+
+#water clima
+OPENWEATHER_APP_ID = config("39c1738a2568d360ea0fc864b61657b4")
+
+TMDB_API_KEY=config()
+
+
+
+
+
+
+
+import requests
+from functions.online_ops import find_my_ip, get_latest_news, get_random_advice
+from functions.online_ops import get_random_joke, get_trending_movies
+from functions.online_ops import get_weather_report, play_on_youtube, search_on_google
+from functions.online_ops import search_on_wikipedia, send_email, send_whatsapp_message
+import pyttsx3
+import speech_recognition as sr
+from decouple import config
+from datetime import datetime
+from functions.os_ops import open_calculator, open_camera, open_cmd, open_notepad
+from functions.os_ops import open_discord
+from random import choice
+from utils import opening_text
+from pprint import pprint
+
+
+USERNAME = config('USER')
+BOTNAME = config('BOTNAME')
+
+
+engine = pyttsx3.init('sapi5')
+
+# Set Rate
+engine.setProperty('rate', 190)
+
+# Set Volume
+engine.setProperty('volume', 1.0)
+
+# Set Voice (Female)
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[1].id)
+
+def get_random_joke():
+
+
+# Text to Speech Conversion
+    
+    """Used to speak whatever text is passed to it"""
+
+    engine.say(text)
+    engine.runAndWait()
+
+
+# Greet the user
+def greet_user():
+    """Greets the user according to the time"""
+    def speak(text):
+    
+        hour = datetime.now().hour
+        if (hour >= 6) and (hour < 12):
+            speak(f"Good Morning {USERNAME}")
+        elif (hour >= 12) and (hour < 16):
+            speak(f"Good afternoon {USERNAME}")
+        elif (hour >= 16) and (hour < 19):
+            speak(f"Good Evening {USERNAME}")
+        speak(f"I am {BOTNAME}. How may I assist you?")
+
+
+# Takes Input from User
+def take_user_input():
+    """Takes user input, recognizes it using Speech Recognition module and converts it into text"""
+    
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print('Listening....')
+        r.pause_threshold = 1
+        audio = r.listen(source)
