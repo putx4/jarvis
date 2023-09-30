@@ -1,64 +1,46 @@
-from sys import exception
+from os import error
 import requests
-from functions.online_ops import find_my_ip, get_latest_news, get_random_advice
-from functions.online_ops import get_random_joke, get_trending_movies
-from functions.online_ops import get_weather_report, play_on_youtube, search_on_google
-from functions.online_ops import search_on_wikipedia, send_email, send_whatsapp_message
 import pyttsx3
 import speech_recognition as sr
 from decouple import config
 from datetime import datetime
-from functions.os_ops import open_calculator, open_camera, open_cmd, open_notepad
-from functions.os_ops import open_discord
 from random import choice
 from utils import opening_text
 from pprint import pprint
+from functions.online_ops import (
 
+    find_my_ip, get_latest_news, get_random_advice, get_random_joke,
+    get_trending_movies, get_weather_report, play_on_youtube, search_on_google,
+    search_on_wikipedia, send_email, send_whatsapp_message
+)
+from functions.os_ops import (
+    open_calculator, open_camera, open_cmd, open_discord, open_notepad
+)
 
 USERNAME = config('USER')
 BOTNAME = config('BOTNAME')
 
-
 engine = pyttsx3.init('sapi5')
-
-# Set Rate
 engine.setProperty('rate', 190)
-
-# Set Volume
 engine.setProperty('volume', 1.0)
-
-# Set Voice (Female)
 voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[1].id)
+engine.setProperty('voice', voices[0].id)
 
-
-# Text to Speech Conversion
 def speak(text):
-    """Used to speak whatever text is passed to it"""
-
     engine.say(text)
     engine.runAndWait()
 
-
-# Greet the user
 def greet_user():
-    """Greets the user according to the time"""
-    
     hour = datetime.now().hour
-    if (hour >= 6) and (hour < 12):
-        speak(f"Buenos dias {USERNAME}")
-    elif (hour >= 12) and (hour < 16):
+    if 6 <= hour < 12:
+        speak(f"Buenos días {USERNAME}")
+    elif 12 <= hour < 16:
         speak(f"Buenas tardes {USERNAME}")
-    elif (hour >= 16) and (hour < 19):
+    elif 16 <= hour < 19:
         speak(f"Buenas noches {USERNAME}")
     speak(f"Yo soy {BOTNAME}. ¿Cómo puedo ayudarte?")
 
-
-# Takes Input from User
 def take_user_input():
-    """Recibe entrada del usuario, la reconoce utilizando el módulo de reconocimiento de
-    voz y la convierte en texto"""
-    
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print('Escuchando....')
@@ -69,79 +51,75 @@ def take_user_input():
         print('Reconociendo...')
         query = r.recognize_google(audio, language='es-ES')
         return query.lower()
+        query = ""
+        speak(choice(opening_text))
     except sr.RequestError as e:
-        print(f"Error en la solicitud de reconocimiento de voz:{e}")
-        return ""
-        if not ('exit' in query or 'stop' in query):
-         
-         speak(choice(opening_text))
+        speak(f"Error en la solicitud de reconocimiento de voz: {e}")
+    except Exception as e:
+        error_message = f"No pude entender. ¿Podrías decir eso de nuevo? {str(e)}"
+        print(error_message)
+        speak(error_message)
+        query = ""
 
-        else:
-            hour = datetime.now().hour
-            if hour >= 21 and hour < 6:
-                speak("buenas noches, señor!")
-            else:
-                speak('Tenga un buen dia, señor')
-    except exception: 
-        print("Lo siento, no pude entender. ¿Podrías decir eso de nuevo?")
-    finally:
-        print("Fin del proceso")
-    
-        
+    return query.lower()
+
 if __name__ == '__main__':
     greet_user()
     while True:
         query = take_user_input().lower()
 
-        if 'open notepad' in query:
+        speak(choice(opening_text))
+
+        if 'abre el block de notas' in query:
             open_notepad()
 
-        elif 'open discord' in query:
+        elif 'abre discord' in query:
             open_discord()
 
-        elif 'open command prompt' in query or 'open cmd' in query:
+
+        if 'abre la caja de comando' in query or 'open cmd' in query:
             open_cmd()
 
-        elif 'open camera' in query:
+        elif 'abre la camara' in query:
             open_camera()
 
-        elif 'open calculator' in query:
+        elif 'abre la calculadora' in query:
             open_calculator()
 
-        elif 'ip address' in query:
+        if 'direccion ip' in query:
             ip_address = find_my_ip()
-            speak(f'Your IP Address is{ip_address}.\n SE lo muestro en pantalla, señor')
-            print(f'Your IP Address is{ip_address}')
+        if ip_address:
+            speak(f'Su dirección IP es {ip_address}.')
+            print(f'Su dirección IP es {ip_address}')
 
-        elif 'wikipedia' in query:
-            speak('¿Qué quiere buscar en Wikipedia, señor?')
+        if 'busca en wikipedia' in query:
+            speak('¿Qué desea buscar en Wikipedia, señor?')
             search_query = take_user_input().lower()
             results = search_on_wikipedia(search_query)
-            speak(f"De acuerdo con wikipedia, {results}")
+            speak(f"De acuerdo con Wikipedia, {results}")
             speak("Para su comodidad, mostraré en pantalla los resultados, señor.")
             print(results)
 
-        elif 'youtube' in query:
-            speak('¿Que desea ver en YouTube, señor?')
+        if 'busca en youtube' in query:
+            speak('¿Qué desea ver en YouTube, señor?')
             video = take_user_input().lower()
             play_on_youtube(video)
 
-        elif 'search on google' in query:
+        if 'busca en google' in query:
             speak('¿Qué desea buscar en Google, señor?')
-            query = take_user_input().lower()
-            search_on_google(query)
+            search_query = take_user_input().lower()
+            search_on_google(search_query)
 
-        elif "send whatsapp message" in query:
-            speak(
-                '¿A qué número envio el mensaje señor?, digítelo en la consola:')
+        if "envia un whatsapp" in query:
+            speak('¿A qué número envío el mensaje, señor?')
             number = input("Ingrese el número: ")
-            speak("¿Cúal es el mensaje, señor?")
+            speak("¿Cuál es el mensaje, señor?")
             message = take_user_input().lower()
             send_whatsapp_message(number, message)
             speak("El mensaje ha sido enviado, señor.")
 
-        elif "send an email" in query:
-            speak("¿A qué dirección de correo la envío, señor? Por favor, ingreselo: ")
+        if "envia un email" in query:
+            speak("¿A qué dirección de correo la envío, señor? Por favor, ingrésela: ")
             receiver_address = input("Ingrese la dirección de correo electrónico: ")
             speak("¿Cuál es el asunto, señor?")
             subject = take_user_input().capitalize()
@@ -152,36 +130,39 @@ if __name__ == '__main__':
             else:
                 speak("Algo ha salido mal mientras estaba enviando el correo.")
 
-        elif 'joke' in query:
-            speak(f"Espero que le guste este chiste, señor:{get_random_joke()}")
+        if 'dime un chiste' in query:
             joke = get_random_joke()
-            speak(joke)
+            speak(f"Espero que le guste este chiste, señor: {joke}")
             speak("Aquí tiene su chiste, señor")
             pprint(joke)
 
-        elif "advice" in query:
-            speak(f"Acá hay un consejo para usted, señor:{get_random_advice()}")
-            advice = get_random_advice()  # noqa: E999
-            speak(advice)
+        if "dame un consejo" in query:
+            advice = get_random_advice()
+            speak(f"Acá hay un consejo para usted, señor: {advice}")
             speak("Mostrando en pantalla, señor")
             pprint(advice)
 
-        elif "trending movies" in query:
-            speak(f"Some of the trending movies are: {get_trending_movies()}")
-            speak("For your convenience, I am printing it on the screen sir.")
-            print(*get_trending_movies(), sep='\n')
+        if "peliculas taquilleras" in query:
+            trending_movies = get_trending_movies()
+            speak(
+            f"Algunas de las películas más taquilleras son:{','.join(trending_movies)}")
+            speak("Para su conveniencia, las estoy imprimiendo en pantalla, señor.")
+            pprint(trending_movies)
 
-        elif 'news' in query:
-            speak("I'm reading out the latest news headlines, sir")
-            speak(get_latest_news())
-            speak("For your convenience, I am printing it on the screen sir.")
-            print(*get_latest_news(), sep='\n')
+        if 'noticias' in query:
+            news = get_latest_news()
+            speak("Estoy leyendo los titulares de noticias más recientes, señor")
+            speak(news)
+            speak("Para su conveniencia, los estoy imprimiendo en pantalla, señor.")
+            pprint(news)
 
-        elif 'weather' in query:
+
+
+        if 'cómo está el clima' in query:
             ip_address = find_my_ip()
             city = requests.get(f"https://ipapi.co/{ip_address}/city/").text
-            speak(f"Getting weather report for your city {city}")
+            speak(f"Obteniendo el informe del clima para su ciudad {city}")
             weather, temperature, feels_like = get_weather_report(city)
             speak(
-            f"The current temperature is {temperature}, but it feels like {feels_like}"
+            f"La temperatura actual es {temperature}, pero se siente como {feels_like}"
             )
